@@ -46,6 +46,9 @@
                             <x-nav-link :href="route('resubmissions.index')" :active="request()->routeIs('qresubmissions.index')">
                                 {{ __('Resubmissions') }}
                             </x-nav-link>
+                            <x-nav-link :href="route('excel.index')" :active="request()->routeIs('excel.index')">
+                                {{ __('import') }}
+                            </x-nav-link>
                         @elseif (auth()->user()->role === 'user')
                             <!-- User specific menu -->
                             <x-nav-link :href="route('home')" :active="request()->routeIs('home')">

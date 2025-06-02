@@ -15,7 +15,7 @@ class CreateCobitItemsTable extends Migration
     {
         Schema::create('cobit_items', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_item');
+            $table->string('nama_item')->unique();
             $table->text('deskripsi');
             $table->timestamps();
         });

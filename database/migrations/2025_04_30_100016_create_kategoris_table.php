@@ -15,7 +15,7 @@ class CreateKategorisTable extends Migration
     {
         Schema::create('kategoris', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
+            $table->string('nama')->unique();
             $table->foreignId('cobit_item_id')->constrained('cobit_items')->onDelete('cascade');
             $table->timestamps();
         });

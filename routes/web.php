@@ -11,6 +11,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\CobitItemController;
 use App\Http\Controllers\QuisionerController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\ExcelController;
 use App\Http\Controllers\ResubmissionRequestController;
 use App\Http\Controllers\UserProgressController;
 
@@ -59,6 +60,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/resubmission-requests', [ResubmissionRequestController::class, 'adminIndex'])->name('resubmissions.index');
     Route::post('/resubmission-requests/{resubmissionRequest}/approve', [ResubmissionRequestController::class, 'approve'])->name('resubmissions.approve');
     Route::post('/resubmission-requests/{resubmissionRequest}/reject', [ResubmissionRequestController::class, 'reject'])->name('resubmissions.reject');
+
+    Route::post('/import', [ExcelController::class,'import'])->name('excel.import');
+    Route::get('/import', [ExcelController::class,'index'])->name('excel.index');
 });
 
 // User routes - hanya untuk role user

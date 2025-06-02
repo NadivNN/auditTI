@@ -30,52 +30,51 @@ class AuditController extends Controller
     public function showLevels(CobitItem $cobitItem, Kategori $kategori)
     {
         $userId = Auth::id();
+
         $levels = Level::where('kategori_id', $kategori->id)
-                       // ->orderBy('urutan_kolom', 'asc') // Jika ada kolom urutan, aktifkan
-                       ->get();
+            ->orderBy('level_number', 'asc')
+            ->get();
 
-        $levelsWithStatus = $levels->map(function ($level) use ($userId) {
-            // 1. Cek apakah user sudah pernah menjawab level ini
-            $level->hasAnswers = Jawaban::where('user_id', $userId)
-                                        ->where('level_id', $level->id)
-                                        ->exists();
+        $levelsWithStatus = collect();
+        $prevLevelHasF = true; // Level 1 selalu muncul
 
-            // 2. Cek apakah ada permintaan pengisian ulang yang statusnya 'pending' atau 'approved'
+        foreach ($levels as $level) {
+            $quisionerIds = $level->quisioners()->pluck('id');
+
+            $userAnswers = Jawaban::where('user_id', $userId)
+                ->where('level_id', $level->id)
+                ->whereIn('quisioner_id', $quisionerIds)
+                ->pluck('jawaban');
+
+            // Cek apakah user sudah isi jawaban apapun
+            $hasAnyAnswer = $userAnswers->isNotEmpty();
+
+            // Cek apakah jawaban user mengandung "F"
+            $hasFAnswer = $userAnswers->contains('F');
+
+            // Cek pengajuan ulang
             $activeRequest = ResubmissionRequest::where('user_id', $userId)
-                                                ->where('level_id', $level->id)
-                                                ->whereIn('status', ['pending', 'approved'])
-                                                ->first();
+                ->where('level_id', $level->id)
+                ->whereIn('status', ['pending', 'approved'])
+                ->first();
 
-            // 3. Set flag berdasarkan status request
-            $level->pendingRequest = $activeRequest && $activeRequest->status == 'pending';
-            $level->approvedRequest = $activeRequest && $activeRequest->status == 'approved';
-            
-            // 4. Tentukan apakah tombol "Ajukan Pengisian Ulang" bisa ditampilkan
-            // Bisa diajukan jika: sudah dijawab DAN TIDAK ada request yang statusnya pending ATAU approved
-            $level->canRequestResubmission = $level->hasAnswers && !$activeRequest;
+            // Set flags untuk view
+            $level->hasAnswers = $hasAnyAnswer;
+            $level->hasFAnswer = $hasFAnswer;
+            $level->approvedRequest = optional($activeRequest)->status === 'approved';
+            $level->pendingRequest = optional($activeRequest)->status === 'pending';
+            $level->canRequestResubmission = $hasAnyAnswer && !$activeRequest;
+            $level->unlocked = $prevLevelHasF || $level->approvedRequest;
 
-            // Untuk Debugging Individual Level (bisa di-uncomment jika dd() di bawah terlalu banyak)
-            /*
-            dump([
-                'level_id' => $level->id,
-                'nama_level' => $level->nama_level,
-                'hasAnswers' => $level->hasAnswers,
-                'activeRequest_status' => $activeRequest ? $activeRequest->status : null,
-                'pendingRequest' => $level->pendingRequest,
-                'approvedRequest' => $level->approvedRequest,
-                'canRequestResubmission' => $level->canRequestResubmission,
-            ]);
-            */
+            // Tampilkan hanya jika level unlocked
+            if ($level->unlocked) {
+                $levelsWithStatus->push($level);
+            }
 
-            return $level;
-        });
+            // Persiapkan flag untuk level berikutnya
+            $prevLevelHasF = $hasFAnswer || $level->approvedRequest;
+        }
 
-        // !!! PENTING: HENTIKAN EKSEKUSI DAN TAMPILKAN DATA UNTUK DEBUGGING !!!
-        // Periksa output ini di browser Anda.
-        // Untuk setiap level, pastikan 'hasAnswers' dan 'canRequestResubmission' memiliki nilai yang Anda harapkan.
-        // dd($levelsWithStatus->toArray());
-
-        // Pastikan nama view Anda adalah 'audit.levels' atau sesuaikan
         return view('audit.levels', [
             'cobitItem' => $cobitItem,
             'kategori' => $kategori,
@@ -87,8 +86,8 @@ class AuditController extends Controller
     {
         $userId = Auth::id();
         $hasAnswers = Jawaban::where('user_id', $userId)
-                              ->where('level_id', $level->id)
-                              ->exists();
+            ->where('level_id', $level->id)
+            ->exists();
 
         if ($hasAnswers) {
             $approvedRequest = ResubmissionRequest::where('user_id', $userId)
@@ -98,7 +97,7 @@ class AuditController extends Controller
 
             if (!$approvedRequest) {
                 return redirect()->route('audit.showLevels', ['cobitItem' => $cobitItem->id, 'kategori' => $kategori->id])
-                                 ->with('error', 'Anda sudah mengisi kuesioner untuk level ini. Ajukan pengisian ulang jika ingin mengubah.');
+                    ->with('error', 'Anda sudah mengisi kuesioner untuk level ini. Ajukan pengisian ulang jika ingin mengubah.');
             }
         }
 
