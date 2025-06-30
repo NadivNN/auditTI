@@ -17,7 +17,8 @@ class CreateJawabansTable extends Migration
             $table->id();
             $table->enum('jawaban', ['N', 'P', 'L', 'F']); // Kolom untuk jawaban N, P, L, F
             $table->foreignId('quisioner_id')->constrained('quisioners')->onDelete('cascade'); // Relasi ke quisioners
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Relasi ke users
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('level_id')->constrained('levels')->onDelete('cascade'); // Relasi ke users
             $table->timestamps();
         });
     }

@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NewUserForApproval;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail; // Pastikan ini di-import
+use Illuminate\Support\Facades\Log;  // Import Log untuk catatan
 
 class RegisterController extends Controller
 {
@@ -14,7 +17,7 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'approved' => 0, // Set approved to 0 (pending approval)
+            'approved' => 0,
         ]);
     }
 
@@ -30,7 +33,12 @@ class RegisterController extends Controller
         // Create a new user with approved = 0
         $user = $this->create($validated);
 
-        // Redirect to login page with a success message
-        return redirect()->route(route: 'login')->with('status', 'Registration successful! Please wait for admin approval.');
+        try {
+            Mail::to(env('ADMIN_EMAIL_ADDRESS'))->send(new NewUserForApproval($user));
+        } catch (\Exception $e) {
+            \Log::error('Gagal mengirim email approval: ' . $e->getMessage());
+        }
+
+        return redirect()->route('registration.pending'); // Pastikan nama route ini benar
     }
 }

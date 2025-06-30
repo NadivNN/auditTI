@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 class KategoriController extends Controller // Ganti nama controller jika berbeda
 {
+    
     public function index(Request $request)
     {
         // Ambil semua Cobit Item untuk pilihan filter dropdown

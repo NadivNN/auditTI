@@ -15,14 +15,14 @@ class UserApprovalController extends Controller
         return view('admin.approvals.index', compact('pendingUsers'));
     }
 
-    public function approve($id)
-    {
-        $user = User::findOrFail($id);
+    public function approve(User $user)
+{
+    if (!$user->is_approved) {
         $user->is_approved = true;
+        $user->email_verified_at = now(); // <-- TAMBAHKAN BARIS INI
         $user->save();
-
-        // (Next step nanti: kirim notifikasi email di sini)
-
-        return redirect()->route('admin.approvals')->with('success', 'User approved successfully.');
     }
+
+    return redirect()->route('admin.approvals.index')->with('success', 'User ' . $user->name . ' has been approved.');
+}
 }

@@ -1,25 +1,32 @@
 <?php
 
+use App\Http\Controllers\Admin\UserApprovalController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\ExcelController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\JawabanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\CobitItemController;
 use App\Http\Controllers\QuisionerController;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\ExcelController;
-use App\Http\Controllers\ResubmissionRequestController;
 use App\Http\Controllers\UserProgressController;
+use App\Http\Controllers\Admin\ProgressController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\ResubmissionRequestController;
+
 
 
 // Main routes
 Route::get('/', function () {
     return view('auth/login');
 });
+
+Route::get('/menunggu-persetujuan', [PageController::class, 'pending'])->name('registration.pending');
+
 
 // Dashboard yang bisa diakses semua user yg sudah login & verified
 Route::middleware(['auth', 'verified', 'role:user'])->group(function () {
@@ -37,12 +44,24 @@ Route::middleware('auth')->group(function () {
 
 // Admin routes - hanya untuk role admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('admin/progress', [ProgressController::class, 'index'])->name('admin.progress.index');
+    // Route::get('admin/progress/{user}/pdf', [ProgressController::class, 'exportPdf'])->name('progress.exportPdf');
+    Route::get('/admin/progress/{user}/pdf', [\App\Http\Controllers\Admin\ProgressController::class, 'downloadPDF'])->name('admin.progress.downloadPDF');
+
+    Route::get('/progress/{user}', [ProgressController::class, 'show'])->name('admin.progress.show');
     // Admin dashboard
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     // User approval
     Route::get('/admin/approvals', [AdminController::class, 'showApprovals'])->name('admin.approvals');
+
     Route::patch('/admin/approve/{id}', [AdminController::class, 'approveUser'])->name('admin.approve');
+
+    Route::get('/approvals', [UserApprovalController::class, 'index'])->name('admin.approvals.index');
+
+    Route::post('/approvals/{user}', [UserApprovalController::class, 'approve'])->name('admin.approvals.approve');
+
+
 
     // CRUD Cobit Item
     Route::get('/cobititem/create', [CobitItemController::class, 'create'])->name('cobititem.create');
@@ -78,7 +97,8 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/audit/{cobitItem}/{kategori}', [AuditController::class, 'showLevels'])->name('audit.showLevels');
     Route::get('/audit/{cobitItem}/{kategori}/{level}', [AuditController::class, 'showQuisioner'])->name('audit.showQuisioner');
     Route::post('/audit/{level}/jawaban', [JawabanController::class, 'store'])->name('jawaban.store');
-    Route::get('/my-progress', [UserProgressController::class, 'index'])->name('user.progress');
+    Route::get('/progress', [UserProgressController::class, 'index'])->name('user.progress.index');
+    Route::get('/my-progress', [UserProgressController::class, 'downloadPDF'])->name('user.progress.download');
 });
 
 // Halaman waiting approval

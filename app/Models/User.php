@@ -21,7 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'approved',  
+        'approved',
         'phone_number',    // Tambahkan ini
         'company_name',    // Tambahkan ini
         'department', // Include 'approved'
@@ -47,4 +47,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function jawabans()
+    {
+        // Ganti 'Jawaban::class' jika nama model Anda berbeda
+        return $this->hasMany(Jawaban::class);
+    }
 }

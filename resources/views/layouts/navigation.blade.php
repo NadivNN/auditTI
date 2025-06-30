@@ -24,10 +24,13 @@
                             <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                                 {{ __('Dashboard') }}
                             </x-nav-link>
-                            <x-nav-link :href="route('admin.approvals')" :active="request()->routeIs('admin.approvals')">
+                            <x-nav-link :href="route('admin.approvals.index')" :active="request()->routeIs('admin.approvals.index')">
                                 {{ __('User Approvals') }}
                             </x-nav-link>
 
+                            <x-nav-link :href="route('admin.progress.index')" :active="request()->routeIs('admin.progress.index')">
+                                {{ __('Progress Users') }}
+                            </x-nav-link>
                             <x-nav-link :href="route('cobititem.index')" :active="request()->routeIs('cobititem.index')">
                                 {{ __('Cobit Items') }}
                             </x-nav-link>
@@ -58,7 +61,7 @@
                             <x-nav-link :href="route('audit.index')" :active="request()->routeIs('audit.index')">
                                 {{ __('Audit') }}
                             </x-nav-link>
-                            <x-nav-link :href="route('user.progress')" :active="request()->routeIs('user.progress')">
+                            <x-nav-link :href="route('user.progress.index')" :active="request()->routeIs('user.progress.index')">
                                 {{ __('Progress') }}
                             </x-nav-link>
                         @endif
@@ -128,7 +131,7 @@
 
             @auth
                 @if (auth()->user()->role === 'admin')
-                    <x-nav-link :href="route('admin.approvals')" :active="request()->routeIs('admin.approvals')">
+                    <x-nav-link :href="route('admin.approvals.index')" :active="request()->routeIs('admin.approvals.index')">
                         {{ __('User Approvals') }}
                     </x-nav-link>
 

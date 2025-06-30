@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -7,15 +8,23 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-use Illuminate\Support\Facades\Route;
+// 1. IMPORT CONTROLLER KUSTOM ANDA
+use App\Http\Controllers\RegisterController;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-                ->name('register');
+    // 2. UBAH ROUTE GET UNTUK MENAMPILKAN HALAMAN REGISTRASI ANDA
+    // Langsung arahkan ke view registrasi kustom Anda.
+    Route::get('register', function() {
+        // Pastikan nama file blade Anda adalah 'register.blade.php' di dalam folder 'resources/views/auth/'
+        return view('auth.register');
+    })->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    // 3. UBAH ROUTE POST UNTUK MENGARAHKAN KE CONTROLLER KUSTOM ANDA (INI YANG PALING PENTING)
+    Route::post('register', [RegisterController::class, 'register']);
+
+
+    // --- BAGIAN LOGIN DAN LAINNYA DI BAWAH INI TIDAK PERLU DIUBAH ---
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
                 ->name('login');
